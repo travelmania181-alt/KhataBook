@@ -74,3 +74,54 @@ function download(type) {
 $("incomeExport").onclick = () => download("income");
 $("expenseExport").onclick = () => download("expense");
 
+
+function showLoginMessage(message) {
+  let msg = document.getElementById("loginMessage");
+  if (!msg) {
+    msg = document.createElement("p");
+    msg.id = "loginMessage";
+    msg.className = "tiny";
+    $("loginBtn").insertAdjacentElement("afterend", msg);
+  }
+  msg.textContent = message;
+}
+
+$("loginBtn").addEventListener("click", () => {
+  const name = $("userName").value.trim();
+  const passcode = $("passcode").value;
+
+  if (!name) {
+    showLoginMessage("Please enter your name.");
+    $("userName").focus();
+    return;
+  }
+
+  if (passcode.length < 4) {
+    showLoginMessage("Please enter a passcode of at least 4 characters.");
+    $("passcode").focus();
+    return;
+  }
+
+  if (profile && profile.passcode) {
+    if (profile.passcode !== passcode) {
+      showLoginMessage("Incorrect passcode. Please try again.");
+      return;
+    }
+  } else if (!profile) {
+    profile = { name, passcode };
+    localStorage.setItem("khataBookProfile", JSON.stringify(profile));
+  } else {
+    // Preserve an existing profile and add a passcode if it had none.
+    profile = { ...profile, name: profile.name || name, passcode };
+    localStorage.setItem("khataBookProfile", JSON.stringify(profile));
+  }
+
+  showApp();
+});
+
+$("logoutBtn").addEventListener("click", () => {
+  $("main").hidden = true;
+  $("auth").hidden = false;
+  $("passcode").value = "";
+  showLoginMessage("");
+});
