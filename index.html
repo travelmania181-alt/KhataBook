@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102a2a"><meta name="description" content="KhataBook income and expense tracker">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>KhataBook</title><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar"><div class="brand"><img src="./icon.svg" alt="" class="logo"><div><b>KhataBook</b><small>Money, made clearer.</small></div></div><button id="themeBtn" class="icon-btn" aria-label="Toggle theme">◐</button></header>
+<section id="auth" class="auth-card">
+  <div class="eyebrow">YOUR MONEY, IN FOCUS</div><h1>Welcome to your<br><span>financial calm.</span></h1><p class="muted">Track what comes in, what goes out, and what stays with you.</p>
+  <label>Your name<input id="userName" placeholder="e.g. Saurabh" autocomplete="name"></label>
+  <label>Passcode <input id="passcode" type="password" placeholder="Create a local passcode" minlength="4"></label>
+  <button id="loginBtn" class="primary full">Continue</button><p class="tiny muted">Starter build: this passcode is stored only in this browser and is not secure account authentication. Don't use it for sensitive or shared-device records.</p>
+</section>
+<main id="main" hidden>
+<section class="welcome-row"><div><div class="eyebrow" id="todayLabel">YOUR OVERVIEW</div><h1>Hey, <span id="greetingName">there</span> 👋</h1></div><button id="logoutBtn" class="text-btn">Log out</button></section>
+<section class="balance-card"><div class="balance-top"><span>NET THIS MONTH</span><span id="monthLabel"></span></div><div id="netBalance" class="big-number">₹0</div><div class="balance-bottom"><div><small>↗ Income</small><b id="incomeTotal">₹0</b></div><div><small>↘ Expenses</small><b id="expenseTotal">₹0</b></div></div></section>
+<section class="quick-actions"><button class="quick income" data-type="income"><span>＋</span><b>Add income</b></button><button class="quick expense" data-type="expense"><span>−</span><b>Add expense</b></button></section>
+<section class="section-head"><div><div class="eyebrow">YOUR ACTIVITY</div><h2>Recent transactions</h2></div><button id="allBtn" class="text-btn">View all</button></section>
+<div id="transactions" class="transactions"></div>
+<section class="section-head report-head"><div><div class="eyebrow">MONTHLY SNAPSHOT</div><h2>Income vs expenses</h2></div><input id="reportMonth" type="month" aria-label="Report month"></section>
+<section class="report-grid"><article class="report-card"><span>Income</span><strong id="reportIncome">₹0</strong><div class="bar"><i id="incomeBar"></i></div><button id="incomeExport" class="outline-btn">Download income CSV</button></article><article class="report-card"><span>Expenses</span><strong id="reportExpense">₹0</strong><div class="bar expense-bar"><i id="expenseBar"></i></div><button id="expenseExport" class="outline-btn">Download expenses CSV</button></article></section>
+<section class="section-head"><div><div class="eyebrow">QUICK INSIGHT</div><h2>Where it goes</h2></div></section><section id="categoryBreakdown" class="breakdown"></section>
+<footer>KhataBook · Your money, made clearer.</footer>
+</main>
+</div>
+<dialog id="txDialog"><form method="dialog" id="txForm"><div class="dialog-head"><div><div class="eyebrow" id="formEyebrow">NEW ENTRY</div><h2 id="formTitle">Add transaction</h2></div><button type="button" id="closeDialog" class="icon-btn">✕</button></div>
+<div class="type-switch"><button type="button" data-formtype="expense" class="selected">Expense</button><button type="button" data-formtype="income">Income</button></div>
+<label>Amount (₹)<input id="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required></label>
+<label>What was it for?<input id="note" maxlength="70" placeholder="e.g. Groceries, salary" required></label>
+<div class="two-col"><label>Category<select id="category"></select></label><label>Date<input id="date" type="date" required></label></div>
+<label>Payment method<select id="payment"><option>UPI</option><option>Cash</option><option>Bank transfer</option><option>Card</option><option>Other</option></select></label>
+<div class="dialog-actions"><button type="button" id="cancelDialog" class="outline-btn">Cancel</button><button type="submit" class="primary">Save entry</button></div></form></dialog>
+<script src="./app.js"></script><script>if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));</script>
+</body></html>
