@@ -20,9 +20,60 @@ $("txForm").addEventListener("submit",e=>{e.preventDefault();const amount=Number
 $("closeDialog").onclick=$("cancelDialog").onclick=()=>$("txDialog").close();
 $("transactions").addEventListener("click",e=>{let id=e.target.dataset.delete;if(id&&confirm("Delete this transaction?")){data=data.filter(t=>t.id!==id);save()}});
 $("reportMonth").addEventListener("change",render);$("allBtn").onclick=()=>{showAll=!showAll;$("allBtn").textContent=showAll?"Show recent":"View all";render()};
-function download(type){let m=selectedMonth(),arr=monthData(m).filter(t=>t.type===type),rows=[["Date","Type","Description","Category","Payment method","Amount (INR)"],...arr.map(t=>[t.date,type,t.note,t.category,t.payment,t.amount])];let csv=rows.map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\r\n");let blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`KhataBook-${type}-${m}.csv`;a.click();URL.revokeObjectURL(url)}
-$("incomeExport").onclick=()=>download("income");$("expenseExport").onclick=()=>download("expense");
-$("loginBtn").onclick=()=>{let name=$("userName").value.trim(),pass=$("passcode").value;if(!name||pass.length<4){alert("Enter your name and a passcode of at least 4 characters.");return}if(profile&&profile.name!==name&&!confirm("This browser already has a local profile. Continue with the saved profile?"))return;profile=profile||{name,passcode:pass};profile.name=name;localStorage.setItem("khataBookProfile",JSON.stringify(profile));showApp()};
-$("logoutBtn").onclick=()=>{profile=null;$("main").hidden=true;$("auth").hidden=false;$("passcode").value=""};
-$("themeBtn").onclick=()=>document.body.classList.toggle("dark");
-if(profile){$("userName").value=profile.name;showApp()}
+
+function download(type) {
+  const m = selectedMonth();
+  const arr = monthData(m).filter(t => t.type === type);
+
+  const rows = [
+    ["Date", "Type", "Description", "Category", "Payment method", "Amount (INR)"],
+    ...arr.map(t => [
+      t.date,
+      type,
+      t.note,
+      t.category,
+      t.payment,
+      Number(t.amount)
+    ])
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+  // Convert ISO dates (YYYY-MM-DD) to genuine Excel date values.
+  arr.forEach((t, index) => {
+    const cell = XLSX.utils.encode_cell({ r: index + 1, c: 0 });
+    const [year, month, day] = t.date.split("-").map(Number);
+
+    worksheet[cell] = {
+      t: "d",
+      v: new Date(Date.UTC(year, month - 1, day)),
+      z: "dd-mm-yyyy"
+    };
+  });
+
+  worksheet["!cols"] = [
+    { wch: 14 },
+    { wch: 12 },
+    { wch: 30 },
+    { wch: 22 },
+    { wch: 20 },
+    { wch: 18 }
+  ];
+
+  // Format amounts as numeric currency values.
+  arr.forEach((t, index) => {
+    const cell = XLSX.utils.encode_cell({ r: index + 1, c: 5 });
+    if (worksheet[cell]) {
+      worksheet[cell].z = '#,##0.00';
+    }
+  });
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, type);
+
+  XLSX.writeFile(workbook, `KhataBook-${type}-${m}.xlsx`);
+}
+
+$("incomeExport").onclick = () => download("income");
+$("expenseExport").onclick = () => download("expense");
+
