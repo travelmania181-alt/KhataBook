@@ -37,41 +37,31 @@ function download(type) {
     ])
   ];
 
-  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+  const ws = XLSX.utils.aoa_to_sheet(rows);
 
-  // Convert ISO dates (YYYY-MM-DD) to genuine Excel date values.
-  arr.forEach((t, index) => {
-    const cell = XLSX.utils.encode_cell({ r: index + 1, c: 0 });
-    const [year, month, day] = t.date.split("-").map(Number);
-
-    worksheet[cell] = {
-      t: "d",
-      v: new Date(Date.UTC(year, month - 1, day)),
-      z: "dd-mm-yyyy"
-    };
-  });
-
-  worksheet["!cols"] = [
+  // Give each column enough space
+  ws["!cols"] = [
     { wch: 14 },
     { wch: 12 },
     { wch: 30 },
-    { wch: 22 },
+    { wch: 20 },
     { wch: 20 },
     { wch: 18 }
   ];
 
-  // Format amounts as numeric currency values.
-  arr.forEach((t, index) => {
-    const cell = XLSX.utils.encode_cell({ r: index + 1, c: 5 });
-    if (worksheet[cell]) {
-      worksheet[cell].z = '#,##0.00';
+  // Format date cells consistently
+  for (let r = 1; r < rows.length; r++) {
+    const cell = ws[XLSX.utils.encode_cell({ r, c: 0 })];
+    if (cell) {
+      cell.t = "s";
+      cell.z = "@";
     }
-  });
+  }
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, type);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, type === "income" ? "Income" : "Expenses");
 
-  XLSX.writeFile(workbook, `KhataBook-${type}-${m}.xlsx`);
+  XLSX.writeFile(wb, `KhataBook-${type}-${m}.xlsx`);
 }
 
 $("incomeExport").onclick = () => download("income");
