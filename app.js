@@ -21,6 +21,7 @@ $("closeDialog").onclick=$("cancelDialog").onclick=()=>$("txDialog").close();
 $("transactions").addEventListener("click",e=>{let id=e.target.dataset.delete;if(id&&confirm("Delete this transaction?")){data=data.filter(t=>t.id!==id);save()}});
 $("reportMonth").addEventListener("change",render);$("allBtn").onclick=()=>{showAll=!showAll;$("allBtn").textContent=showAll?"Show recent":"View all";render()};
 
+
 function download(type) {
   const m = selectedMonth();
   const arr = monthData(m).filter(t => t.type === type);
@@ -28,20 +29,20 @@ function download(type) {
   const rows = [
     ["Date", "Type", "Description", "Category", "Payment method", "Amount (INR)"],
     ...arr.map(t => [
-      t.date,
+      String(t.date ?? ""),
       type,
-      t.note,
-      t.category,
-      t.payment,
-      Number(t.amount)
+      t.note ?? "",
+      t.category ?? "",
+      t.payment ?? "",
+      Number(t.amount) || 0
     ])
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
 
-  // Give each column enough space
+  // Set practical column widths
   ws["!cols"] = [
-    { wch: 14 },
+    { wch: 16 },
     { wch: 12 },
     { wch: 30 },
     { wch: 20 },
@@ -49,20 +50,26 @@ function download(type) {
     { wch: 18 }
   ];
 
-  // Format date cells consistently
+  // Keep dates as text to avoid Excel date-format issues
   for (let r = 1; r < rows.length; r++) {
-    const cell = ws[XLSX.utils.encode_cell({ r, c: 0 })];
-    if (cell) {
-      cell.t = "s";
-      cell.z = "@";
+    const address = XLSX.utils.encode_cell({ r, c: 0 });
+    if (ws[address]) {
+      ws[address].t = "s";
+      ws[address].v = String(rows[r][0]);
+      ws[address].z = "@";
     }
   }
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, type === "income" ? "Income" : "Expenses");
+  XLSX.utils.book_append_sheet(
+    wb,
+    ws,
+    type === "income" ? "Income" : "Expenses"
+  );
 
   XLSX.writeFile(wb, `KhataBook-${type}-${m}.xlsx`);
 }
+
 
 $("incomeExport").onclick = () => download("income");
 $("expenseExport").onclick = () => download("expense");
