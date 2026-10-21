@@ -86,6 +86,7 @@ function showLoginMessage(message) {
   msg.textContent = message;
 }
 
+
 $("loginBtn").addEventListener("click", () => {
   const name = $("userName").value.trim();
   const passcode = $("passcode").value;
@@ -97,25 +98,23 @@ $("loginBtn").addEventListener("click", () => {
   }
 
   if (passcode.length < 4) {
-    showLoginMessage("Please enter a passcode of at least 4 characters.");
+    showLoginMessage("Passcode must be at least 4 characters.");
     $("passcode").focus();
     return;
   }
 
-  if (profile && profile.passcode) {
-    if (profile.passcode !== passcode) {
-      showLoginMessage("Incorrect passcode. Please try again.");
-      return;
-    }
-  } else if (!profile) {
-    profile = { name, passcode };
-    localStorage.setItem("khataBookProfile", JSON.stringify(profile));
-  } else {
-    // Preserve an existing profile and add a passcode if it had none.
-    profile = { ...profile, name: profile.name || name, passcode };
-    localStorage.setItem("khataBookProfile", JSON.stringify(profile));
+  if (profile && profile.passcode && profile.passcode !== passcode) {
+    showLoginMessage("Incorrect passcode. Please enter your existing passcode.");
+    return;
   }
 
+  if (!profile) {
+    profile = { name, passcode };
+  } else {
+    profile = { ...profile, name: profile.name || name, passcode: profile.passcode || passcode };
+  }
+
+  localStorage.setItem("khataBookProfile", JSON.stringify(profile));
   showApp();
 });
 
